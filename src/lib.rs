@@ -60,7 +60,7 @@ unsafe impl GlobalAlloc for Mesh {
         let ptr = if layout.align() <= alignof_max_align_t && layout.align() < layout.size() {
             ffi::mesh_malloc(layout.size())
         } else {
-            ffi::mesh_memalign(layout.size(), layout.align())
+            ffi::mesh_memalign(layout.align(), layout.size())
         };
 
         ptr as *mut u8
