@@ -66,6 +66,7 @@ unsafe impl GlobalAlloc for Mesh {
         ptr as *mut u8
     }
 
+    #[inline]
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
         assume!(layout.size() != 0);
 
@@ -88,12 +89,13 @@ unsafe impl GlobalAlloc for Mesh {
         ffi::mesh_sized_free(ptr as *mut c_void, layout.size())
     }
 
+    #[inline]
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
         assume!(layout.size() != 0);
         assume!(new_size != 0);
 
-        if layout.align() <= alignof_max_align_t && layout.align() < layout.size() {
-            ffi::mesh_realloc(ptr as *mut c_void, layout.size()) as *mut u8
+        if layout.align() <= alignof_max_align_t && layout.align() < new_size {
+            ffi::mesh_realloc(ptr as *mut c_void, new_size) as *mut u8
         } else {
             let new_layout = Layout::from_size_align_unchecked(new_size, layout.align());
             let new_ptr = self.alloc(new_layout);
@@ -109,8 +111,10 @@ unsafe impl GlobalAlloc for Mesh {
             new_ptr
         }
     }
+
 }
 
+#[inline]
 pub unsafe fn usable_size<T>(ptr: *mut T) -> usize {
     ffi::mesh_malloc_usable_size(ptr as *mut c_void)
 }
